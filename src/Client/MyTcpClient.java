@@ -22,6 +22,7 @@ public class MyTcpClient {
         delete5Times(hostName, portNumber);
     }
 
+
     private static void put5Times(String hostName, int portNumber) {
         // put keys and values into server's map
         String putData = RequestExampleHandler.getInstance().getProperty("TCP_PUT_REQUEST_DATA");
@@ -38,6 +39,7 @@ public class MyTcpClient {
         }
     }
 
+
     private static void get5Times(String hostName, int portNumber) {
         // get all keys used to retrieve data from server
         String keySets = RequestExampleHandler.getInstance().getProperty("TCP_GET_REQUEST_DATA");
@@ -53,6 +55,7 @@ public class MyTcpClient {
             protocol.toServer(tokens, hostName, portNumber);
         }
     }
+
 
     private static void delete5Times(String hostName, int portNumber) {
         String keySets = RequestExampleHandler.getInstance().getProperty("TCP_DEL_REQUEST_DATA");

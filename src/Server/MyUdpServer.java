@@ -1,6 +1,9 @@
 package Server;
 
+import Controller.Result;
 import Controller.UdpController;
+import Protocol.MyUdpProtocol;
+import Test.RequestExampleHandler;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -10,12 +13,14 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+
 public class MyUdpServer {
 
     public static Logger LOGGER = Logger.getLogger("UdpServer");
-
     public Map<String, String> map;
     UdpController controller;
+    public static MyUdpProtocol udpProtocol = new MyUdpProtocol();
+
     public MyUdpServer(UdpController controller, Map<String, String> map) {
         this.map = map;
         this.controller = controller;
@@ -26,7 +31,9 @@ public class MyUdpServer {
         UdpController controller = new UdpController();
         MyUdpServer udpServer = new MyUdpServer(controller, map);
 
-        int portNumber = 8888;
+        String port = RequestExampleHandler.getInstance().getProperty("PORT");
+        int portNumber = Integer.parseInt(port);
+
         LOGGER.log(Level.WARNING, "Server activated...");
         System.out.println("Server activated...\n");
 
@@ -38,25 +45,17 @@ public class MyUdpServer {
             while (true) {
                 DatagramPacket dataPacket = new DatagramPacket(msgBuffer, msgBuffer.length);
                 socket.receive(dataPacket);
-                // receive message from client
 
+                // receive message from client
                 msgBuffer = dataPacket.getData();
                 int nLen = dataPacket.getLength();
                 String clientMessage = new String(msgBuffer, 0, nLen, "ISO-8859-1");
                 System.out.println("Message from client: " + clientMessage);
 
+                Result res = new Result();
+
                 if (!clientMessage.equals("")) {
-                    // Request type
-                    String requestType = clientMessage.substring(0, clientMessage.indexOf(" "));
-                    if (requestType.equalsIgnoreCase("PUT")) {
-                        udpServer.controller.udpPut(socket, dataPacket, udpServer.map, clientMessage);
-                    } else if (requestType.equalsIgnoreCase("GET")) {
-                        udpServer.controller.udpGet(socket, dataPacket, udpServer.map, clientMessage);
-                    } else if (requestType.equalsIgnoreCase("DELETE")) {
-                        udpServer.controller.udpDelete(socket, dataPacket, udpServer.map, clientMessage);
-                    } else {
-                        System.out.println("Request error");
-                    }
+                    res = udpProtocol.fromClient(socket, dataPacket, udpServer.map, clientMessage);
                 }
             }
         } catch (IOException e) {

@@ -10,7 +10,7 @@ public class UdpController{
 
     public UdpController(){}
 
-    public void udpPut(DatagramSocket socket,
+    public UdpResult udpPut(DatagramSocket socket,
                     DatagramPacket clientPacket,
                     Map<String, String> map,
                     String msg) {
@@ -44,7 +44,7 @@ public class UdpController{
 
     }
 
-    public void udpGet(DatagramSocket socket,
+    public UdpResult udpGet(DatagramSocket socket,
                     DatagramPacket clientPacket,
                     Map<String, String> map,
                     String msg) {
@@ -70,7 +70,7 @@ public class UdpController{
 
     }
 
-    public void udpDelete(DatagramSocket socket,
+    public UdpResult udpDelete(DatagramSocket socket,
                           DatagramPacket clientPacket,
                           Map<String, String> map,
                           String msg) {

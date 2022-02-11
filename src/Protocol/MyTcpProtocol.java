@@ -14,7 +14,7 @@ import java.util.logging.Logger;
 
 public class MyTcpProtocol {
 
-    public static Logger logger = Logger.getLogger("My_TcpProtocol");
+    public static Logger logger = Logger.getLogger("MyTcpProtocol");
     public TcpController tcpController = new TcpController();
 
     public MyTcpProtocol(){}
@@ -94,10 +94,8 @@ public class MyTcpProtocol {
         String[] processMsg = processMsg(token);
         // get request type(PUT, GET, DEL)
         String type = processMsg[0];
-        System.out.println(type);
         // get request content
         String content = processMsg[1];
-        System.out.println(content);
 
         DataOutputStream outputStream = null;
         Socket client = null;
