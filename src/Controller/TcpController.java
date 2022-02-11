@@ -4,13 +4,18 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Map;
+import java.util.logging.Logger;
 
 public class TcpController{
 
+    public static Logger logger = Logger.getLogger("Tcp Controller");
     public TcpController(){}
 
-    public void tcpPut(Socket client, String msg, Map<String, String> map) {
+
+    public Result tcpPut(Socket client, String msg, Map<String, String> map) {
+        logger.config("Invoke tcp PUT operation...");
         System.out.println("\nInvoke tcp PUT operation...");
+
         // Message format should be
         // RequestType key, value
         // Example:
@@ -22,13 +27,12 @@ public class TcpController{
             System.out.println("value is " + value);
             if (!key.equals("")) {
                 map.put(key, value);
-                sendToClient(client, "PUT", key, "");
-
+                return new Result(true, msg, "", "PUT", client);
             } else {
                 System.out.println("Put request is failed");
             }
-
         } else {
+            logger.warning("Put message is null");
             System.out.println("Put message is null");
         }
 
@@ -39,9 +43,13 @@ public class TcpController{
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+
+        return new Result(false, "N/A", "N/A", "FAIL", client);
     }
 
-    public void tcpGet(Socket client, String msg, Map<String, String> map) {
+
+    public Result tcpGet(Socket client, String msg, Map<String, String> map) {
+        logger.config("Invoke tcp PUT operation...");
         System.out.println("\nInvoke tcp GET operation...");
         // Message format should be
         // RequestType key
@@ -50,7 +58,7 @@ public class TcpController{
         if (!msg.equals("")) {
             if (map.containsKey(msg)) {
                 String sendBack = map.get(msg);
-                sendToClient(client, "GET", msg, sendBack);
+                return new Result(true, msg, sendBack, "GET", client);
             } else {
                 try {
                     DataOutputStream deleteError = new DataOutputStream(client.getOutputStream());
@@ -60,11 +68,11 @@ public class TcpController{
                 }
 
                 System.out.println("No such key");
-                System.out.println("===========================================");;
+                System.out.println("===========================================");
             }
-
         } else {
-            System.out.println("msg is null");
+            logger.warning("message is null");
+            System.out.println("message is null");
         }
 
         // close client
@@ -74,10 +82,12 @@ public class TcpController{
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-
+        return new Result(false, "N/A", "N/A", "FAIL", client);
     }
 
-    public void tcpDelete(Socket client, String msg, Map<String, String> map) {
+
+    public Result tcpDelete(Socket client, String msg, Map<String, String> map) {
+        logger.config("Invoke tcp PUT operation...");
         System.out.println("\nInvoke tcp DELETE operation...");
         // Message format should be
         // RequestType key
@@ -86,20 +96,21 @@ public class TcpController{
         if (!msg.equals("")) {
             if (map.containsKey(msg)) {
                 map.remove(msg);
-                sendToClient(client, "DELETE", msg, "");
+                return new Result(true, msg, "", "DELETE", client);
             } else {
                 try {
                     DataOutputStream deleteError = new DataOutputStream(client.getOutputStream());
-                    deleteError.writeUTF("No such key (" + msg + "" + "). DELETE is FAIL");
+                    deleteError.writeUTF("No such key (" + msg + "" + "). GET is FAIL");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                System.out.println("No such key");
-                System.out.println("===========================================");;
-            }
 
+                System.out.println("No such key");
+                System.out.println("===========================================");
+            }
         } else {
-            System.out.println("msg is null");
+            logger.warning("message is null");
+            System.out.println("message is null");
         }
 
         // close client
@@ -109,25 +120,8 @@ public class TcpController{
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-    }
 
-    public void sendToClient(Socket client, String requestType, String key, String returnMsg) {
-        System.out.println("Operation is successful");
-        System.out.println("Send message back to client...");
-        try {
-            DataOutputStream outStream = new DataOutputStream(client.getOutputStream());
-            if (!returnMsg.equals("") && requestType.equalsIgnoreCase("GET")) {
-                outStream.writeUTF("Retrieved value with key (" + key + ") from server: " + returnMsg);
-            } else {
-                // send client feedback
-                outStream.writeUTF(requestType + " with key: " + key + " is SUCCESS");
-            }
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        System.out.println("Sending is successful");
-        System.out.println("===========================================");
+        return new Result(false, "N/A", "N/A", "FAIL", client);
     }
 
 }

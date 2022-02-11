@@ -1,6 +1,8 @@
 package Server;
 
-import Controller.TcpController;
+import Controller.Result;
+import Protocol.MyTcpProtocol;
+import Test.RequestExampleHandler;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -8,23 +10,29 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 public class MyTcpServer {
 
+    public static Logger logger = Logger.getLogger("Tcp Server");
+    public static MyTcpProtocol protocol = new MyTcpProtocol();
+
     public Map<String, String> map;
-    TcpController controller;
-    public MyTcpServer(TcpController controller, Map<String, String> map) {
+    public MyTcpServer(Map<String, String> map) {
         this.map = map;
-        this.controller = controller;
     }
 
     public static void main(String[] args) {
         Map<String, String> map = new HashMap<>();
-        TcpController controller = new TcpController();
-        MyTcpServer tcpServer = new MyTcpServer(controller, map);
+        MyTcpServer tcpServer = new MyTcpServer(map);
 
-        int portNumber = 8888;
+        String port = RequestExampleHandler.getInstance().getProperty("PORT");
+        int portNumber = Integer.parseInt(port);
+
+        logger.info("Server activated...\n");
         System.out.println("Server activated...\n");
+
+        Result res = new Result();
 
         try {
             ServerSocket server = new ServerSocket(portNumber);
@@ -33,29 +41,18 @@ public class MyTcpServer {
                 Socket client = server.accept();
                 DataInputStream input = new DataInputStream(client.getInputStream());
                 String clientMessage = input.readUTF();
+                logger.fine("Message from client: " + clientMessage);
                 System.out.println("Message from client: " + clientMessage);
 
                 if (!clientMessage.equals("")) {
-                    // Request type
-                    String requestType = clientMessage.substring(0, clientMessage.indexOf(" "));
-                    // Request messages
-                    String msgContent = clientMessage.substring(clientMessage.indexOf(" ") + 1);
+                    res = protocol.fromClient(client, clientMessage, tcpServer.map);
+                }
 
-                    if (requestType.equalsIgnoreCase("PUT")) {
-                        // PUT request
-                        tcpServer.controller.tcpPut(client, msgContent, tcpServer.map);
-                    }else if (requestType.equalsIgnoreCase("GET")) {
-                        // GET request
-                        tcpServer.controller.tcpGet(client, msgContent, tcpServer.map);
-                    }else if (requestType.equalsIgnoreCase("DELETE")) {
-                        // DELETE request
-                        tcpServer.controller.tcpDelete(client, msgContent, tcpServer.map);
-                    }else{
-                        System.out.println("Request error");
-                    }
+                // if operation is successful
+                if (res.result) {
+                    protocol.toClient(res.client, res.type, res.key, res.returnMsg);
                 }
             }
-
         } catch (IOException e) {
             e.printStackTrace();
         }
