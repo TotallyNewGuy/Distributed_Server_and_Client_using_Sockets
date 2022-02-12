@@ -1,19 +1,22 @@
 package Controller;
 
-import java.io.IOException;
+import Result.UdpResult;
+
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.util.Map;
-import java.util.Objects;
 
 public class UdpController{
 
     public UdpController(){}
 
     public UdpResult udpPut(DatagramSocket socket,
-                    DatagramPacket clientPacket,
-                    Map<String, String> map,
-                    String msg) {
+                            DatagramPacket clientPacket,
+                            Map<String, String> map,
+                            String msg) {
+
+        UdpResult res = new UdpResult();
+
         System.out.println("\nInvoke tcp PUT operation...");
         // Message format should be
         // RequestType key, value
@@ -29,19 +32,20 @@ public class UdpController{
 
             if (!key.equals("")) {
                 map.put(key, value);
-                sendToClient(socket, clientPacket, "PUT", key, "");
-
+                res = new UdpResult(true, key, "", "PUT", socket);
             } else {
                 String failureMsg = "Received a malformed request of length: " + clientPacket.getLength() + " from: "
                         + clientPacket.getAddress() + " at Port: " + clientPacket.getPort();
-                sendFailureToClient(socket, clientPacket, failureMsg);
+                res = new UdpResult(false, key, failureMsg, "PUT", socket);
             }
 
         } else {
             String failureMsg = "The message content is not present.";
-            sendFailureToClient(socket, clientPacket, failureMsg);
+            res = new UdpResult(false, "", failureMsg, "PUT", socket);
+
         }
 
+        return res;
     }
 
     public UdpResult udpGet(DatagramSocket socket,
@@ -55,19 +59,23 @@ public class UdpController{
         // GET name
         String msgContent = msg.substring(msg.indexOf(" ") + 1);
         System.out.println("key is " + msgContent);
+
+        UdpResult res = new UdpResult();
+
         if (!msgContent.equals("")) {
             if (map.containsKey(msgContent)) {
                 String retrievedMsg = map.get(msgContent);
-                sendToClient(socket, clientPacket, "GET", msgContent, retrievedMsg);
+                res = new UdpResult(true, msgContent, retrievedMsg, "GET", socket);
             } else {
-                String failureMsg = "There is no key-value pair for key: " + msgContent;
-                sendFailureToClient(socket, clientPacket, failureMsg);
+                String failureMsg = "There is no such key: " + msgContent;
+                res = new UdpResult(false, msgContent, failureMsg, "GET", socket);
             }
         } else {
             String failureMsg = "The message content is not present.";
-            sendFailureToClient(socket, clientPacket, failureMsg);
+            res = new UdpResult(false, "", failureMsg, "GET", socket);
         }
 
+        return res;
     }
 
     public UdpResult udpDelete(DatagramSocket socket,
@@ -83,61 +91,25 @@ public class UdpController{
         String msgContent = msg.substring(msg.indexOf(" ") + 1);
         System.out.println("key is " + msgContent);
 
+        UdpResult res = new UdpResult();
+
         if (!msgContent.equals("")) {
             if (map.containsKey(msgContent)) {
                 String retrievedMsg = map.get(msgContent);
-                sendToClient(socket, clientPacket, "DELETE", msgContent, retrievedMsg);
+                res = new UdpResult(true, msgContent, "", "DELETE", socket);
             } else {
-                String failureMsg = "There is no key-value pair for key: " + msgContent;
-                sendFailureToClient(socket, clientPacket, failureMsg);
+                String failureMsg = "There is no such key: " + msgContent;
+                res = new UdpResult(false, "", failureMsg, "DELETE", socket);
                 System.out.println("Operation is failed");
                 System.out.println("===========================================");
             }
         } else {
             String failureMsg = "The message content is not present.";
-            sendFailureToClient(socket, clientPacket, failureMsg);
+            res = new UdpResult(false, "", failureMsg, "DELETE", socket);
         }
+
+        return res;
     }
 
-
-    public void sendToClient(DatagramSocket socket,
-                             DatagramPacket request,
-                             String requestType, String key,
-                             String returnMsg) {
-        System.out.println("Operation is successful");
-        System.out.println("Send message back to client...");
-        try {
-            String sendBack = "";
-            if (!returnMsg.equals("") && requestType.equalsIgnoreCase("GET")) {
-                sendBack = "Retrieved value with key (" + key + ") from server: " + returnMsg;
-            } else {
-                sendBack = requestType + " with key: " + key + " is SUCCESS";
-            }
-            DatagramPacket sendBackPacket = new DatagramPacket(sendBack.getBytes(),
-                                                                sendBack.getBytes().length,
-                                                                request.getAddress(),
-                                                                request.getPort());
-            // send client feedback
-            socket.send(sendBackPacket);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        System.out.println("Sending is successful");
-        System.out.println("===========================================");
-    }
-
-    public void sendFailureToClient(DatagramSocket socket, DatagramPacket request, String returnMsg) {
-        try {
-            byte[] ackMessage = new byte[500];
-            ackMessage = ("Request FAILED due to: " + returnMsg).getBytes();
-            DatagramPacket ackMsgPacket = new DatagramPacket(ackMessage, ackMessage.length, request.getAddress(),
-                    request.getPort());
-            socket.send(ackMsgPacket);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
 }

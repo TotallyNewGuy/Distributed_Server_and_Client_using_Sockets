@@ -1,9 +1,9 @@
 package Server;
 
-import Controller.Result;
 import Controller.UdpController;
+import Result.UdpResult;
 import Protocol.MyUdpProtocol;
-import Test.RequestExampleHandler;
+import TestData.RequestExampleHandler;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -52,10 +52,22 @@ public class MyUdpServer {
                 String clientMessage = new String(msgBuffer, 0, nLen, "ISO-8859-1");
                 System.out.println("Message from client: " + clientMessage);
 
-                Result res = new Result();
+                UdpResult res = new UdpResult();
 
                 if (!clientMessage.equals("")) {
                     res = udpProtocol.fromClient(socket, dataPacket, udpServer.map, clientMessage);
+                }
+
+                if (res.result) {
+                    udpProtocol.toClient(socket,
+                            dataPacket,
+                            res.type, res.key,
+                            res.returnMsg, true);
+                } else {
+                    udpProtocol.toClient(socket,
+                            dataPacket,
+                            res.type, res.key,
+                            res.returnMsg, false);
                 }
             }
         } catch (IOException e) {

@@ -1,8 +1,8 @@
 package Protocol;
 
-import Controller.Result;
+import Result.TcpResult;
 import Controller.TcpController;
-import Test.RequestExampleHandler;
+import TestData.RequestExampleHandler;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -23,14 +23,14 @@ public class MyTcpProtocol {
         return string.split(",", 2);
     }
 
-    public Result fromClient(Socket client, String clientMessage, Map<String, String> map){
+    public TcpResult fromClient(Socket client, String clientMessage, Map<String, String> map){
         // Request type
         String requestType = clientMessage.substring(0, clientMessage.indexOf(" "));
         // Request messages
         String msgContent = clientMessage.substring(clientMessage.indexOf(" ") + 1);
 
         // receive result from controller
-        Result res = new Result();
+        TcpResult res = new TcpResult();
 
         if (requestType.equalsIgnoreCase("PUT")) {
             // PUT request
@@ -44,7 +44,7 @@ public class MyTcpProtocol {
         }else{
             logger.warning("Request error");
             System.out.println("Request error");
-            return new Result(false, "N/A", "N/A", "FAIL", client);
+            return new TcpResult(false, "N/A", "N/A", "FAIL", client);
         }
     }
 

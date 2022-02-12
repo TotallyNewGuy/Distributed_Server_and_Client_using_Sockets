@@ -1,7 +1,7 @@
 package Client;
 
 import Protocol.MyUdpProtocol;
-import Test.RequestExampleHandler;
+import TestData.RequestExampleHandler;
 
 import java.io.IOException;
 import java.net.InetAddress;

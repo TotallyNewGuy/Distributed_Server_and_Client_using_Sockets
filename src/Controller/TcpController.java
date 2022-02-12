@@ -1,5 +1,7 @@
 package Controller;
 
+import Result.TcpResult;
+
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
@@ -12,7 +14,7 @@ public class TcpController{
     public TcpController(){}
 
 
-    public Result tcpPut(Socket client, String msg, Map<String, String> map) {
+    public TcpResult tcpPut(Socket client, String msg, Map<String, String> map) {
         logger.config("Invoke tcp PUT operation...");
         System.out.println("\nInvoke tcp PUT operation...");
 
@@ -27,7 +29,7 @@ public class TcpController{
             System.out.println("value is " + value);
             if (!key.equals("")) {
                 map.put(key, value);
-                return new Result(true, msg, "", "PUT", client);
+                return new TcpResult(true, msg, "", "PUT", client);
             } else {
                 System.out.println("Put request is failed");
             }
@@ -44,11 +46,11 @@ public class TcpController{
             e.printStackTrace();
         }
 
-        return new Result(false, "N/A", "N/A", "FAIL", client);
+        return new TcpResult(false, "N/A", "N/A", "FAIL", client);
     }
 
 
-    public Result tcpGet(Socket client, String msg, Map<String, String> map) {
+    public TcpResult tcpGet(Socket client, String msg, Map<String, String> map) {
         logger.config("Invoke tcp PUT operation...");
         System.out.println("\nInvoke tcp GET operation...");
         // Message format should be
@@ -58,7 +60,7 @@ public class TcpController{
         if (!msg.equals("")) {
             if (map.containsKey(msg)) {
                 String sendBack = map.get(msg);
-                return new Result(true, msg, sendBack, "GET", client);
+                return new TcpResult(true, msg, sendBack, "GET", client);
             } else {
                 try {
                     DataOutputStream deleteError = new DataOutputStream(client.getOutputStream());
@@ -82,11 +84,11 @@ public class TcpController{
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        return new Result(false, "N/A", "N/A", "FAIL", client);
+        return new TcpResult(false, "N/A", "N/A", "FAIL", client);
     }
 
 
-    public Result tcpDelete(Socket client, String msg, Map<String, String> map) {
+    public TcpResult tcpDelete(Socket client, String msg, Map<String, String> map) {
         logger.config("Invoke tcp PUT operation...");
         System.out.println("\nInvoke tcp DELETE operation...");
         // Message format should be
@@ -96,7 +98,7 @@ public class TcpController{
         if (!msg.equals("")) {
             if (map.containsKey(msg)) {
                 map.remove(msg);
-                return new Result(true, msg, "", "DELETE", client);
+                return new TcpResult(true, msg, "", "DELETE", client);
             } else {
                 try {
                     DataOutputStream deleteError = new DataOutputStream(client.getOutputStream());
@@ -121,7 +123,7 @@ public class TcpController{
             e.printStackTrace();
         }
 
-        return new Result(false, "N/A", "N/A", "FAIL", client);
+        return new TcpResult(false, "N/A", "N/A", "FAIL", client);
     }
 
 }

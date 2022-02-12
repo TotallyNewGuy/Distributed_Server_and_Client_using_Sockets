@@ -1,8 +1,8 @@
 package Server;
 
-import Controller.Result;
+import Result.TcpResult;
 import Protocol.MyTcpProtocol;
-import Test.RequestExampleHandler;
+import TestData.RequestExampleHandler;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 public class MyTcpServer {
 
     public static Logger logger = Logger.getLogger("Tcp Server");
-    public static MyTcpProtocol protocol = new MyTcpProtocol();
+    public static MyTcpProtocol tcpProtocol = new MyTcpProtocol();
 
     public Map<String, String> map;
     public MyTcpServer(Map<String, String> map) {
@@ -32,7 +32,7 @@ public class MyTcpServer {
         logger.info("Server activated...\n");
         System.out.println("Server activated...\n");
 
-        Result res = new Result();
+        TcpResult res = new TcpResult();
 
         try {
             ServerSocket server = new ServerSocket(portNumber);
@@ -45,12 +45,12 @@ public class MyTcpServer {
                 System.out.println("Message from client: " + clientMessage);
 
                 if (!clientMessage.equals("")) {
-                    res = protocol.fromClient(client, clientMessage, tcpServer.map);
+                    res = tcpProtocol.fromClient(client, clientMessage, tcpServer.map);
                 }
 
                 // if operation is successful
                 if (res.result) {
-                    protocol.toClient(res.client, res.type, res.key, res.returnMsg);
+                    tcpProtocol.toClient(res.client, res.type, res.key, res.returnMsg);
                 }
             }
         } catch (IOException e) {

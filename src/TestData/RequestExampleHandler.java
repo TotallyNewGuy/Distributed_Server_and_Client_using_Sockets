@@ -1,4 +1,4 @@
-package Test;
+package TestData;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,7 +11,7 @@ public class RequestExampleHandler {
 	public final Properties configProp = new Properties();
 
 	public RequestExampleHandler() {
-		InputStream in = this.getClass().getClassLoader().getResourceAsStream("Test/ExampleData.properties");
+		InputStream in = this.getClass().getClassLoader().getResourceAsStream("TestData/ExampleData.properties");
 		logger.info("Read all properties from file");
 		System.out.println("Read all properties from file");
 		try {

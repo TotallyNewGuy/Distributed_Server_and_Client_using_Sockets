@@ -1,12 +1,10 @@
 package Protocol;
 
-import Controller.Result;
+import Result.TcpResult;
 import Controller.UdpController;
-import Controller.UdpResult;
-import Test.RequestExampleHandler;
+import Result.UdpResult;
+import TestData.RequestExampleHandler;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.*;
 import java.util.Map;
@@ -32,14 +30,14 @@ public class MyUdpProtocol {
         String msgContent = clientMessage.substring(clientMessage.indexOf(" ") + 1);
 
         // receive result from controller
-        Result res = new Result();
+        TcpResult res = new TcpResult();
 
         if (requestType.equalsIgnoreCase("PUT")) {
-            return udpController.udpPut(socket, dataPacket, map, clientMessage);
+            return udpController.udpPut(socket, dataPacket, map, msgContent);
         } else if (requestType.equalsIgnoreCase("GET")) {
-            return udpController.udpGet(socket, dataPacket, map, clientMessage);
+            return udpController.udpGet(socket, dataPacket, map, msgContent);
         } else if (requestType.equalsIgnoreCase("DELETE")) {
-            return udpController.udpDelete(socket, dataPacket, map, clientMessage);
+            return udpController.udpDelete(socket, dataPacket, map, msgContent);
         } else {
             System.out.println("Request error");
             return new UdpResult(false, "N/A", "N/A", "FAIL", socket);
@@ -48,8 +46,45 @@ public class MyUdpProtocol {
 
     }
 
-    public void toClient(Socket client, String requestType, String key, String returnMsg){
+    public void toClient(DatagramSocket socket,
+                         DatagramPacket request,
+                         String requestType,
+                         String key,
+                         String returnMsg,
+                         boolean isSuccessful){
+        if (isSuccessful) {
+            System.out.println("Operation is successful");
+            System.out.println("Send message back to client...");
+            try {
+                String sendBack = "";
+                if (!returnMsg.equals("") && requestType.equalsIgnoreCase("GET")) {
+                    sendBack = "Retrieved value with key (" + key + ") from server: " + returnMsg;
+                } else {
+                    sendBack = requestType + " with key: " + key + " is SUCCESS";
+                }
+                DatagramPacket sendBackPacket = new DatagramPacket(sendBack.getBytes(),
+                        sendBack.getBytes().length,
+                        request.getAddress(),
+                        request.getPort());
+                // send client feedback
+                socket.send(sendBackPacket);
 
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            System.out.println("Sending is successful");
+            System.out.println("===========================================");
+        } else {
+            try {
+                byte[] ackMessage = new byte[500];
+                ackMessage = ("Request FAILED due to: " + returnMsg).getBytes();
+                DatagramPacket ackMsgPacket = new DatagramPacket(ackMessage, ackMessage.length, request.getAddress(),
+                        request.getPort());
+                socket.send(ackMsgPacket);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public void fromServer(DatagramSocket client){
@@ -92,14 +127,14 @@ public class MyUdpProtocol {
         try {
             // client send msg to server
             client = new DatagramSocket();
-            String clientMsg = type + " " + token;
+            String clientMsg = type + " " + content;
             DatagramPacket clientPacket = new DatagramPacket(clientMsg.getBytes(),
                                                                 clientMsg.length(),
                                                                 hostName,
                                                                 portNumber);
             String sendMsg = new String(clientPacket.getData(), clientPacket.getOffset(), clientPacket.getLength());
-            logger.config("Data sent from client: " + content);
-            System.out.println("Data sent from client: " + content);
+            logger.config("Data sent from client: " + sendMsg);
+            System.out.println("Data sent from client: " + sendMsg);
             // send PUT request to server
             client.send(clientPacket);
 

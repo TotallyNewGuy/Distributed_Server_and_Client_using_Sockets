@@ -1,21 +1,22 @@
-package Controller;
+package Result;
 
+import java.net.DatagramSocket;
 import java.net.Socket;
 
-public class Result {
+public class UdpResult {
     public boolean result;
     public String key;
     public String returnMsg;
     public String type;
-    public Socket client;
+    public DatagramSocket client;
 
-    public Result(){}
+    public UdpResult(){}
 
-    public Result(boolean result,
+    public UdpResult(boolean result,
                   String key,
                   String returnMsg,
                   String type,
-                  Socket client){
+                 DatagramSocket client){
         this.result = result;
         this.key = key;
         this.returnMsg = returnMsg;
